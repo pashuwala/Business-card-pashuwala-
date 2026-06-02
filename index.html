@@ -1,1 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>3D Advanced Business Card | Professional</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at 30% 30%, #1a1e2b, #0b0d14);
+      font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
 
+    /* subtle animated background glow */
+    .bg-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 50% 50%, rgba(75, 145, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .scene {
+      width: 100%;
+      max-width: 750px;
+      height: 480px;
+      perspective: 1500px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      margin: 20px;
+    }
+
+    /* The card container with 3D transforms */
+    .card-3d {
+      width: 100%;
+      max-width: 650px;
+      height: 380px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out, box-shadow 0.4s ease;
+      border-radius: 28px;
+      cursor: pointer;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    /* shared front and back styling */
+    .card-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 28px;
+      backface-visibility: hidden;
+      background: linear-gradient(145deg, #20263a, #0f131f);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s;
+    }
+
+    /* FRONT FACE */
+    .card-front {
+      transform: rotateY(0deg);
+      background: linear-gradient(135deg, #1b2238 0%, #0e1222 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px 35px;
+      box-sizing: border-box;
+    }
+
+    /* metallic accent strip */
+    .front-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #b8944b, #e5c884, #c9a44b, #f7e3a8, #b8944b);
+      box-shadow: 0 2px 15px rgba(230, 190, 70, 0.5);
+      border-radius: 28px 28px 0 0;
+    }
+
+    .company-name {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #f3e3c9;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 8px rgba(220, 180, 60, 0.5);
+      margin-top: 10px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #fffaec 20%, #dbbc6c 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      color: #9aa4c2;
+      margin-top: -5px;
+      font-weight: 300;
+      text-transform: uppercase;
+    }
+
+    .contact-details {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      color: #d6dff5;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s;
+    }
+
+    .info-row:hover {
+      transform: translateX(6px);
+      color: #f5e7c6;
+    }
+
+    .icon-box {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 215, 130, 0.25);
+      color: #e5c174;
+      font-size: 1.1rem;
+    }
+
+    .info-text {
+      font-weight: 400;
+      color: #dce3f5;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .info-text strong {
+      color: #f7e5b3;
+      margin-right: 4px;
+      font-weight: 500;
+    }
+
+    .website-link {
+      color: #b4c8ff;
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(180, 200, 255, 0.5);
+      transition: 0.2s;
+    }
+
+    .website-link:hover {
+      color: #ffdf8c;
+      border-bottom-color: #ffdf8c;
+    }
+
+    .bottom-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 15px;
+    }
+
+    .logo-symbol {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #cfae5c, #f7e291);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .qr-placeholder {
+      width: 55px;
+      height: 55px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(230, 200, 100, 0.4);
+      backdrop-filter: blur(5px);
+      font-size: 0.7rem;
+      color: #cbb26a;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* BACK FACE */
+    .card-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, #171d2e, #0a0e1a);
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .back-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 8px);
+      pointer-events: none;
+    }
+
+    .back-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .back-logo {
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(180deg, #ddc38b, #ab8b4c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px rgba(190, 150, 40, 0.4);
+    }
+
+    .tagline {
+      color: #b7c0dd;
+      font-weight: 300;
+      letter-spacing: 2px;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 25px;
+      width: fit-content;
+    }
+
+    .whatsapp-badge {
+      background: rgba(37, 211, 102, 0.15);
+      border: 1px solid #25d366;
+      border-radius: 50px;
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #dcf8c6;
+      font-weight: 500;
+      backdrop-filter: blur(8px);
+      margin-top: 5px;
+    }
+
+    .whatsapp-badge span {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #2ecc71;
+    }
+
+    .address-back {
+      color: #bcc6e0;
+      font-size: 0.9rem;
+      max-width: 280px;
+      line-height: 1.6;
+      background: rgba(0,0,0,0.3);
+      padding: 10px 18px;
+      border-radius: 30px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* 3D interaction hint */
+    .hint {
+      position: absolute;
+      bottom: 15px;
+      right: 25px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 1px;
+      background: rgba(0,0,0,0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 550px) {
+      .card-3d {
+        height: 420px;
+        max-width: 95%;
+      }
+      .company-name {
+        font-size: 2rem;
+      }
+      .contact-details {
+        gap: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="scene">
+    <!-- 3D Card Container -->
+    <div class="card-3d" id="businessCard">
+      <!-- FRONT FACE -->
+      <div class="card-face card-front">
+        <div class="front-accent"></div>
+        <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%;">
+          <div>
+            <div class="company-name">NEXUS<span style="font-weight:300; font-size:2rem;">CORP</span></div>
+            <div class="subtitle">Global Solutions</div>
+          </div>
+
+          <div class="contact-details">
+            <div class="info-row">
+              <div class="icon-box">📞</div>
+              <div class="info-text"><strong>Mobile:</strong> +1 (415) 867-5309</div>
+            </div>
+            <div class="info-row">
+              <div class="icon-box">🌐</div>
+              <div class="info-text">
+                <strong>Web:</strong> 
+                <a href="#" class="website-link" onclick="event.preventDefault()">www.nexuscorp-global.com</a>
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="icon-box">📍</div>
+              <div class="info-text"><strong>Address:</strong> 850 Tech Park Drive, Suite 400, San Francisco, CA 94107</div>
+            </div>
+          </div>
+
+          <div class="bottom-strip">
+            <div class="logo-symbol">N◆C</div>
+            <div class="qr-placeholder">
+              <span>QR<br>CODE</span>
+            </div>
+          </div>
+          <div class="hint">⬤ hover / touch</div>
+        </div>
+      </div>
+
+      <!-- BACK FACE -->
+      <div class="card-face card-back">
+        <div class="back-pattern"></div>
+        <div class="back-content">
+          <div class="back-logo">NEXUSCORP</div>
+          <div class="tagline">INNOVATION · INTEGRITY · IMPACT</div>
+          
+          <!-- WhatsApp number prominently -->
+          <div class="whatsapp-badge">
+            <span>💬</span> 
+            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+              <small style="color:#a5d6a5; font-size:0.7rem;">WhatsApp</small>
+              <strong style="font-size:1.3rem; letter-spacing:0.5px;">+1 (415) 867-5309</strong>
+            </div>
+          </div>
+
+          <div class="address-back">
+            📍 850 Tech Park Drive, Suite 400<br>San Francisco, CA 94107
+          </div>
+          <div style="color:#8892b0; font-size:0.8rem; margin-top:5px;">
+            www.nexuscorp-global.com
+          </div>
+        </div>
+        <div class="hint" style="left:25px; right:auto;">⬤ flip side</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const card = document.getElementById('businessCard');
+      if (!card) return;
+
+      // State for smooth animation
+      let currentRotateX = 0;
+      let currentRotateY = 0;
+      let targetRotateX = 0;
+      let targetRotateY = 0;
+      
+      // For mobile touch handling
+      let isTouchDevice = false;
+
+      // Function to update transform with linear interpolation (smooth)
+      function animateCard() {
+        // Smooth transition towards target
+        currentRotateX += (targetRotateX - currentRotateX) * 0.15;
+        currentRotateY += (targetRotateY - currentRotateY) * 0.15;
+        
+        card.style.transform = `rotateX(${currentRotateX}deg) rotateY(${currentRotateY}deg)`;
+        
+        // Continue animation loop if difference is significant
+        if (Math.abs(targetRotateX - currentRotateX) > 0.01 || 
+            Math.abs(targetRotateY - currentRotateY) > 0.01) {
+          requestAnimationFrame(animateCard);
+        }
+      }
+
+      // Start the animation loop
+      function startAnimation() {
+        requestAnimationFrame(animateCard);
+      }
+
+      // Set target rotation based on mouse position relative to card
+      function handleMouseMove(e) {
+        if (isTouchDevice) return; // ignore mouse if touch device active
+        
+        const rect = card.getBoundingClientRect();
+        const cardCenterX = rect.left + rect.width / 2;
+        const cardCenterY = rect.top + rect.height / 2;
+        
+        // Calculate mouse position relative to center, normalized (-1 to 1)
+        const deltaX = (e.clientX - cardCenterX) / (rect.width / 2);
+        const deltaY = (e.clientY - cardCenterY) / (rect.height / 2);
+        
+        // Max rotation angles (in degrees) - subtle but advanced 3D effect
+        const maxRotateY = 18;  // horizontal rotation
+        const maxRotateX = 12;  // vertical rotation (inverted for natural feel)
+        
+        targetRotateY = deltaX * maxRotateY;
+        targetRotateX = -deltaY * maxRotateX; // negative so moving up tilts card back
+        
+        startAnimation();
+      }
+
+      // Reset rotation when mouse leaves
+      function handleMouseLeave() {
+        targetRotateX = 0;
+        targetRotateY = 0;
+        startAnimation();
+      }
+
+      // Touch handling for mobile devices
+      function handleTouchMove(e) {
+        e.preventDefault(); // prevent scrolling while interacting with card
+        isTouchDevice = true;
+        
+        const touch = e.touches[0];
+        if (!touch) return;
+        
+        const rect = card.getBoundingClientRect();
+        const cardCenterX = rect.left + rect.width / 2;
+        const cardCenterY = rect.top + rect.height / 2;
+        
+        const deltaX = (touch.clientX - cardCenterX) / (rect.width / 2);
+        const deltaY = (touch.clientY - cardCenterY) / (rect.height / 2);
+        
+        const maxRotateY = 16;
+        const maxRotateX = 10;
+        
+        targetRotateY = Math.max(-1, Math.min(1, deltaX)) * maxRotateY;
+        targetRotateX = -Math.max(-1, Math.min(1, deltaY)) * maxRotateX;
+        
+        startAnimation();
+      }
+
+      function handleTouchEnd() {
+        targetRotateX = 0;
+        targetRotateY = 0;
+        startAnimation();
+        // Keep isTouchDevice true but allow mouse events later if needed
+        setTimeout(() => {
+          isTouchDevice = false;
+        }, 300);
+      }
+
+      // Click to flip card effect (toggle between front/back with 180deg Y rotation)
+      let isFlipped = false;
+      function handleCardClick(e) {
+        // Prevent flip if user was dragging (touch move) - simple check
+        if (isTouchDevice && e.type === 'click') {
+          // If touch just ended, we might still want flip? Better to use a dedicated button?
+          // For simplicity, we allow flip on click even after touch, but we check movement.
+          // We'll implement flip as additive rotation on Y axis.
+        }
+        
+        // Toggle flip state: add 180deg to current Y rotation
+        isFlipped = !isFlipped;
+        const baseY = isFlipped ? 180 : 0;
+        // We want to combine baseY with the dynamic rotation from mouse/touch.
+        // So we adjust targetRotateY to include the flip offset.
+        // We'll use a separate variable for flip base.
+        updateCardTransformWithFlip();
+      }
+
+      function updateCardTransformWithFlip() {
+        // We modify the transform directly in animation loop to include flip.
+        // Better approach: store baseFlipY and combine with targetRotateY in animation.
+        // Let's adjust the animate function to include flip base.
+        // We'll override animateCard to use a global flipBaseY.
+      }
+
+      // Revised animation function that includes flip base
+      const originalAnimate = animateCard;
+      let flipBaseY = 0;
+      
+      animateCard = function() {
+        currentRotateX += (targetRotateX - currentRotateX) * 0.15;
+        currentRotateY += (targetRotateY - currentRotateY) * 0.15;
+        
+        const totalRotateY = currentRotateY + flipBaseY;
+        card.style.transform = `rotateX(${currentRotateX}deg) rotateY(${totalRotateY}deg)`;
+        
+        if (Math.abs(targetRotateX - currentRotateX) > 0.01 || 
+            Math.abs(targetRotateY - currentRotateY) > 0.01) {
+          requestAnimationFrame(animateCard);
+        }
+      };
+
+      // Update flip handler
+      card.addEventListener('click', function(e) {
+        // Prevent accidental flips when selecting text etc.
+        if (e.target.closest('a') || e.target.closest('.website-link')) return;
+        
+        isFlipped = !isFlipped;
+        flipBaseY = isFlipped ? 180 : 0;
+        // Ensure animation continues
+        startAnimation();
+      });
+
+      // Mouse events
+      card.addEventListener('mousemove', handleMouseMove);
+      card.addEventListener('mouseleave', handleMouseLeave);
+      
+      // Touch events
+      card.addEventListener('touchmove', handleTouchMove, { passive: false });
+      card.addEventListener('touchend', handleTouchEnd);
+      card.addEventListener('touchcancel', handleTouchEnd);
+      
+      // Initial animation start
+      startAnimation();
+      
+      // Also reset on window blur to avoid stuck states
+      window.addEventListener('blur', () => {
+        targetRotateX = 0;
+        targetRotateY = 0;
+        startAnimation();
+      });
+
+      // For better accessibility and prevent link interference
+      const links = card.querySelectorAll('a');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      });
+
+      console.log('✨ Advanced 3D Business Card ready — move mouse or touch to interact, click to flip.');
+    })();
+  </script>
+</body>
+</html>
